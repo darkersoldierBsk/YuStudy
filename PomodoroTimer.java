@@ -30,6 +30,7 @@ public class PomodoroTimer {
     private static JButton resetButton;
     private static JButton settingsButton;
     private static JButton timerButton;
+    private static JButton songImage;
 
     //TIMER CHANGE
     private static JTextField minuteField;
@@ -40,7 +41,11 @@ public class PomodoroTimer {
     private static int start = 0;
     private static int playerVisibility = 0;
     private static Timer playerHideTimer;
-    private static int resizedCheck = 0;
+    private static boolean resizedCheck = false;
+    private static int resizedWidth = 0;
+    private static int resizedHeight = 0;
+    private static int currentThemeChoice = 0;
+
 
     //TIMER FONT SIZE
     private static int timerFontSize;
@@ -59,15 +64,18 @@ public class PomodoroTimer {
     //IMAGE ICONS
     private static ImageIcon resetIcon;
     private static ImageIcon settingsIcon;
+    private static ImageIcon songImageIcon;
 
 
     //RESIZED BACKGROUND IMAGE
     private static Image originalBackgroundImage;
     private static Image resizedBackgroundImage;
     private static Image baseSettingsImage;
+    private static Image baseSongImage;
     private static BackgroundPanel panel; //  Made panel a class variable
     private static RoundedPanel playerPanel;
     private static JPanel hoverAreaPanel;
+    private static Image baseResetImage;
 
     private static Font timerFont; //  Move font loading out of showPage()
 
@@ -88,7 +96,7 @@ public class PomodoroTimer {
 
         //BACKGROUND SELECTION
         originalBackgroundImage = new ImageIcon(
-                PomodoroTimer.class.getResource("/assets/deskkBg.jpg")).getImage();
+                PomodoroTimer.class.getResource("/assets/animeBoyBg.png")).getImage();
         resizedBackgroundImage = originalBackgroundImage.getScaledInstance(WIDTH, HEIGHT, Image.SCALE_SMOOTH);
 
         //CONTENT PANEL WITH NULL LAYOUT, FREE POSITIONING
@@ -115,20 +123,26 @@ public class PomodoroTimer {
         // playerPanel.setBounds(WIDTH/64, (25*HEIGHT)/32, (5*WIDTH)/16, (4*HEIGHT)/32);     --------
 
         //PLAYER PANEL UI
-
+        System.out.println("player panel height: %d" + (WIDTH/128) );
         //1. SONG NAME JLABEL
         JLabel songName = new JLabel("SONG TITLE");
-        songName.setFont(new Font("SansSerif", Font.BOLD, 11));
-        int songNameHeight = songName.getHeight() + WIDTH/128;
+        songName.setFont(new Font("SansSerif", Font.BOLD, HEIGHT/49));
+        int songNameHeight = (int)(HEIGHT/95); //43.5
+        System.out.println(songNameHeight);
         songName.setBounds((5*WIDTH)/64, songNameHeight, (8*WIDTH)/32, HEIGHT/32);
         songName.setForeground(Color.BLACK);
         playerPanel.add(songName);
 
         //2. SONG IMAGE BUTTON
-        ImageIcon songImageIcon = new ImageIcon("src/assets/winxx.png");
-        FrostedGlowButton songImage = new FrostedGlowButton(songImageIcon);
-        int songImageButtonHeight = songImage.getHeight() + (3*WIDTH)/516;
-        songImage.setBounds(WIDTH/128, songImageButtonHeight, (4*WIDTH)/64, (4*WIDTH)/64);
+        baseSongImage = new ImageIcon("src/assets/winxx.png").getImage();
+        songImageIcon = new ImageIcon(baseSongImage);
+        songImage = new FrostedGlowButton(songImageIcon);
+        /*ImageIcon songImageIcon = new ImageIcon("src/assets/winxx.png");
+        FrostedGlowButton songImage = new FrostedGlowButton(songImageIcon);*/
+        int songImageButtonHeight = songNameHeight/2; //songNameHeight+ (2*WIDTH)/516
+        System.out.println(songImageButtonHeight);
+        songImage.setBounds(WIDTH/128, WIDTH/128, (7*WIDTH)/128, (7*WIDTH)/128);
+        System.out.println(WIDTH/128);
         songImage.setFocusable(false);
         songImage.setContentAreaFilled(false); // No background fill
         songImage.setBorderPainted(false);     // No border initially
@@ -139,52 +153,52 @@ public class PomodoroTimer {
         //3. SHUFFLE BUTTON
         ImageIcon shuffleIcon = new ImageIcon("src/assets/sh16.png");
         FrostedGlowButton shuffleButton = new FrostedGlowButton(shuffleIcon);
-        int shuffleImageButtonHeight = songNameHeight + 28;
-        shuffleButton.setBounds((22*WIDTH)/256, shuffleImageButtonHeight, (10*WIDTH)/256, (3*WIDTH)/128);
+        int shuffleImageButtonHeight = songNameHeight + (int)(HEIGHT/19.2);
+        shuffleButton.setBounds((95*WIDTH)/1024, shuffleImageButtonHeight, (34*WIDTH)/1024, (3*WIDTH)/128);
         shuffleButton.setFocusable(false);
         playerPanel.add(shuffleButton);
 
         //4. BACK BUTTON
         ImageIcon backIcon = new ImageIcon("src/assets/back16.png");
         FrostedGlowButton backButton = new FrostedGlowButton(backIcon);
-        backButton.setBounds((32*WIDTH)/256, shuffleImageButtonHeight, (10*WIDTH)/256, (3*WIDTH)/128);
+        backButton.setBounds((146*WIDTH)/1024, shuffleImageButtonHeight, (34*WIDTH)/1024, (3*WIDTH)/128);
         backButton.setFocusable(false);
         playerPanel.add(backButton);
 
         //5. START BUTTON
         ImageIcon playIcon = new ImageIcon("src/assets/ply16.png");
         FrostedGlowButton playButton = new FrostedGlowButton(playIcon);
-        playButton.setBounds((42*WIDTH)/256, shuffleImageButtonHeight, (10*WIDTH)/256, (3*WIDTH)/128) ;
+        playButton.setBounds((197*WIDTH)/1024, shuffleImageButtonHeight, (34*WIDTH)/1024, (3*WIDTH)/128) ;
         playButton.setFocusable(false);
         playerPanel.add(playButton);
 
         //6. NEXT BUTTON
         ImageIcon nextIcon = new ImageIcon("src/assets/next16.png");
         FrostedGlowButton nextButton = new FrostedGlowButton(nextIcon);
-        nextButton.setBounds((52*WIDTH)/256, shuffleImageButtonHeight, (10*WIDTH)/256, (3*WIDTH)/128);
+        nextButton.setBounds((248*WIDTH)/1024, shuffleImageButtonHeight, (34*WIDTH)/1024, (3*WIDTH)/128);
         nextButton.setFocusable(false);
         playerPanel.add(nextButton);
 
         //7. RESET BUTTON
         ImageIcon rstIcon = new ImageIcon("src/assets/rst16.png");
         FrostedGlowButton rstButton = new FrostedGlowButton(rstIcon);
-        rstButton.setBounds((62*WIDTH)/256, shuffleImageButtonHeight, (10*WIDTH)/256, (3*WIDTH)/128);
+        rstButton.setBounds((299*WIDTH)/1024, shuffleImageButtonHeight, (34*WIDTH)/1024, (3*WIDTH)/128);
         rstButton.setFocusable(false);
         playerPanel.add(rstButton);
 
         //8. SPOTIFY LOGO
         ImageIcon spotifyIcon = new ImageIcon("src/assets/spotify16.png");
         FrostedGlowButton spotifyImage = new FrostedGlowButton(spotifyIcon);
-        int spotifyImageHeight = songNameHeight - 2;
-        spotifyImage.setBounds((73*WIDTH)/256, spotifyImageHeight, (10*WIDTH)/256, (3*WIDTH)/128); //40
+        int spotifyImageHeight = songNameHeight - (HEIGHT/270);
+        spotifyImage.setBounds((300*WIDTH)/1024, spotifyImageHeight, (10*WIDTH)/256, (3*WIDTH)/128); //40
         spotifyImage.setFocusable(false);
         playerPanel.add(spotifyImage);
 
         //9. PLAYER LINE
         JLabel lineLabel = new JLabel();
-        int lineHeight = songNameHeight + 22;
-        lineLabel.setBorder(new LineBorder(Color.getHSBColor(200,200,200), 2));  // 2 pixels thick
-        lineLabel.setBounds((22*WIDTH)/256, lineHeight, (60*WIDTH)/256, (int)(WIDTH/412) );
+        int lineHeight = songNameHeight + (int) (HEIGHT/24.5);
+        lineLabel.setBorder(new LineBorder(Color.getHSBColor(200,200,200), lineHeight));  // 2 pixels thick
+        lineLabel.setBounds((82*WIDTH)/1024, lineHeight, (253*WIDTH)/1024, (int)(WIDTH/412) );
         lineLabel.setFocusable(false);
         playerPanel.add(lineLabel);
 
@@ -227,7 +241,14 @@ public class PomodoroTimer {
                 }
 
                 // Expand playerPanel when mouse enters hover area
-                playerPanel.setBounds((2*WIDTH)/64, (24*HEIGHT)/32, (11*WIDTH)/32, (4*HEIGHT)/32);
+                if(resizedCheck){
+                    resizedWidth = panel.getWidth();
+                    resizedHeight = panel.getHeight();
+                    playerPanel.setBounds((2*resizedWidth)/64, (24*resizedHeight)/32, (11*resizedWidth)/32, (4*resizedHeight)/32);
+                }else{
+                    playerPanel.setBounds((2*WIDTH)/64, (24*HEIGHT)/32, (11*WIDTH)/32, (4*HEIGHT)/32);
+                }
+
                 playerPanel.revalidate();
                 playerPanel.repaint();
             }
@@ -238,7 +259,12 @@ public class PomodoroTimer {
                 playerHideTimer = new Timer(1000, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        playerPanel.setLocation(0, 2 * HEIGHT);  // collapse back to hidden size
+                        if(resizedCheck){
+                            resizedHeight = panel.getHeight();
+                            playerPanel.setLocation(0,2*resizedHeight);
+                        }else {
+                            playerPanel.setLocation(0, 2 * HEIGHT);  // collapse back to hidden size
+                        }
                         playerPanel.revalidate();
                         playerPanel.repaint();
                     }
@@ -334,7 +360,7 @@ public class PomodoroTimer {
         startButton.setBounds((9*WIDTH)/32,(9*HEIGHT)/18,(9*WIDTH)/32,(2*HEIGHT)/18);
         startButton.setForeground(Color.PINK);
         //startButton.setFont(new Font("TimesRoman", Font.PLAIN, (int) (4*HEIGHT)/90));
-        startButton.setFont(new Font("TimesRoman", Font.ITALIC, (int) (6*HEIGHT)/90));
+        startButton.setFont(new Font("TimesRoman", Font.ITALIC | Font.BOLD, (int) (6*HEIGHT)/90));
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -419,20 +445,20 @@ public class PomodoroTimer {
         settingsIcon = new ImageIcon(baseSettingsImage);
         settingsButton = new FrostedGlowButton(settingsIcon);
         settingsButton.setBounds((29*WIDTH)/32,HEIGHT/72,(2*WIDTH)/32,(2*HEIGHT)/18); //... y = (height/18) / 4 ...
-        settingsButton.addActionListener(e -> openSettings());
+        //settingsButton.addActionListener(e -> openSettings());
         //settingsButton.setBounds((19*WIDTH)/32,(9*HEIGHT)/18,(3*WIDTH)/32,(2*HEIGHT)/18);
         //panel.add(settingsButton);
-        /*
+
 
         settingsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //opens a new class named PomodoroSettings
-                //PomodoroSettings.setVisible(true);
+                PomodoroSettings.showSettings();
             }
         });
 
-        */
+
         panel.add(settingsButton);
 
 
@@ -609,7 +635,7 @@ public class PomodoroTimer {
         //resetButton = new FrostedGlowButton(resetIcon);
         //Image baseResetImage = new ImageIcon(PomodoroTimer.class.getResource("assets/reset64.png")).getImage();
         //resetButton = new FrostedGlowButton(baseResetImage);
-        Image baseResetImage = new ImageIcon(PomodoroTimer.class.getResource("assets/reset48.png")).getImage();
+        baseResetImage = new ImageIcon(PomodoroTimer.class.getResource("assets/reset48.png")).getImage();
         resetIcon = new ImageIcon(baseResetImage);
         resetButton = new FrostedGlowButton(resetIcon);
         resetButton.setBounds((19*WIDTH)/32,(9*HEIGHT)/18,(4*WIDTH)/32,(2*HEIGHT)/18);
@@ -644,34 +670,37 @@ public class PomodoroTimer {
             public void componentResized(ComponentEvent e) {
                 int newWidth = frame.getWidth();    // 🔥 recalculate width
                 int newHeight = frame.getHeight();  // 🔥 recalculate height
-                resizedBackgroundImage = originalBackgroundImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+                //resizedBackgroundImage = originalBackgroundImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+                updateBackgroundImage();
 
-                playerPanel.setBounds((2*newWidth)/64, (24*newHeight)/32, (0*newWidth)/64, 2*newHeight);
+                playerPanel.setBounds((2*newWidth)/64, (24*newHeight)/32, 0, 2*newHeight);
                 hoverAreaPanel.setBounds((2*newWidth)/64, (24*newHeight)/32, (11*newWidth)/32, (4*newHeight)/32);
-                resizedCheck = resizedCheck + 1;
+                resizedCheck = true;
 
                 // 🔥 update button positions dynamically
-                int newSongNameHeight = songName.getHeight() + newWidth/128;
+                int newSongNameHeight = (newHeight/95);
                 songName.setBounds((5*newWidth)/64, newSongNameHeight, (8*newWidth)/32, newHeight/32);
 
-                int newSongImageButtonHeight = songImage.getHeight() + (3*newWidth)/516;
+                int newSongImageButtonHeight = newSongNameHeight/2; //songImage.getHeight() + (3*newWidth)/516;
                 songImage.setBounds(newWidth/128, newSongImageButtonHeight, (4*newWidth)/64, (4*newWidth)/64);
 
-                int newShuffleImageButtonHeight = songNameHeight + 28;
-                shuffleButton.setBounds((22*newWidth)/256, newShuffleImageButtonHeight, (10*newWidth)/256, (3*newWidth)/128);
+                int newShuffleImageButtonHeight = (newHeight/90) + (int)(newHeight/19.2);
+                shuffleButton.setBounds((95*newWidth)/1024, newShuffleImageButtonHeight, (34*newWidth)/1024, (3*newWidth)/128);
 
-                playButton.setBounds((42*newWidth)/256, shuffleImageButtonHeight, (10*newWidth)/256, (3*newWidth)/128) ;
+                backButton.setBounds((146*newWidth)/1024, newShuffleImageButtonHeight, (34*newWidth)/1024, (3*newWidth)/128);
 
-                nextButton.setBounds((52*newWidth)/256, shuffleImageButtonHeight, (10*newWidth)/256, (3*newWidth)/128);
+                playButton.setBounds((197*newWidth)/1024, newShuffleImageButtonHeight, (34*newWidth)/1024, (3*newWidth)/128);
 
-                rstButton.setBounds((62*newWidth)/256, shuffleImageButtonHeight, (10*newWidth)/256, (3*newWidth)/128);
+                nextButton.setBounds((248*newWidth)/1024, newShuffleImageButtonHeight, (34*newWidth)/1024, (3*newWidth)/128);
 
-                int spotifyImageHeight = newSongNameHeight - 2;
-                spotifyImage.setBounds((73*newWidth)/256, spotifyImageHeight, (10*newWidth)/256, (3*newWidth)/128);
+                rstButton.setBounds((299*newWidth)/1024, newShuffleImageButtonHeight, (34*newWidth)/1024, (3*newWidth)/128);
 
-                int lineHeight = newSongNameHeight + 22;
-                lineLabel.setBorder(new LineBorder(Color.getHSBColor(200,200,200), 2));  // 2 pixels thick  ///WARNING!!!
-                lineLabel.setBounds((22*newWidth)/256, lineHeight, (60*newWidth)/256, (int)(newWidth/412) );
+                int newSpotifyImageHeight = newSongNameHeight - (newHeight/270);
+                spotifyImage.setBounds((300*newWidth)/1024, newSpotifyImageHeight, (10*newWidth)/256, (3*newWidth)/128);
+
+                int lineHeight = newSongNameHeight + (int) (newHeight/24.5);
+                lineLabel.setBorder(new LineBorder(Color.getHSBColor(200,200,200), lineHeight));  // 2 pixels thick
+                lineLabel.setBounds((82*newWidth)/1024, lineHeight, (253*newWidth)/1024, (int)(newWidth/412));
 
                 startButton.setBounds((9 * newWidth) / 32, (9 * newHeight) / 18, (9 * newWidth) / 32, (2 * newHeight) / 18);
                 settingsButton.setBounds((29*newWidth)/32,newHeight/72,(2*newWidth)/32,(2*newHeight)/18);
@@ -690,13 +719,14 @@ public class PomodoroTimer {
                 timerButton.setFont(finalTimerFont.deriveFont(Font.BOLD, dynamicFontSize));
                  */
 
+                songName.setFont(new Font("SansSerif", Font.BOLD, newHeight/49));
                 timerFontSize = (32 * newHeight) / 160;
                 timerButton.setFont(finalTimerFont.deriveFont(Font.BOLD, timerFontSize));
                 minuteField.setFont(finalTimerFont.deriveFont(Font.BOLD, timerFontSize));
                 secondField.setFont(finalTimerFont.deriveFont(Font.BOLD, timerFontSize));
                 colonLabel.setFont(finalTimerFont.deriveFont(Font.BOLD, timerFontSize));
 
-                startButton.setFont(new Font("TimesRoman", Font.ITALIC, (int) (4*newHeight)/90));
+                startButton.setFont(new Font("TimesRoman", Font.ITALIC | Font.BOLD, (int) (4*newHeight)/90));
                 //resetButton.setFont(new Font("TimesRoman", Font.PLAIN, ));
                 /*
                 if (newHeight > 740) {
@@ -712,19 +742,19 @@ public class PomodoroTimer {
                 resetButton.setIcon(resetIcon);
                 */
 
-                int iconSize = (int)(newHeight/11.25); // Or whatever scaling logic works best
-                Image scaledImage = baseResetImage.getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH);
 
-                // Wrap it into an ImageIcon (which is an Icon!)
-                Icon scaledIcon = new ImageIcon(scaledImage);
+                settingReset();
 
-                // Set it to your FrostedGlowButton
-                resetButton.setIcon(scaledIcon);
-
-                int settingIconSize = (int)(newHeight/13.5); //13.5 -> 14
-                Image settingScaledImage = baseSettingsImage.getScaledInstance(settingIconSize, settingIconSize, Image.SCALE_SMOOTH);
+                //int settingIconSize = (int)(newHeight/13.5); //13.5 -> 14
+                settingSettings();
+                /*Image settingScaledImage = baseSettingsImage.getScaledInstance(settingIconSize, settingIconSize, Image.SCALE_SMOOTH);
                 Icon settingScaledIcon = new ImageIcon(settingScaledImage);
-                settingsButton.setIcon(settingScaledIcon);
+                settingsButton.setIcon(settingScaledIcon);*/
+
+                int songImageSize = (int)(newHeight/13.5); //13.5 -> 14
+                Image songImageScaled = baseSongImage.getScaledInstance(songImageSize, songImageSize, Image.SCALE_SMOOTH);
+                Icon songImageScaledIcon = new ImageIcon(songImageScaled);
+                songImage.setIcon(songImageScaledIcon);
 
                 frame.repaint();
             }
@@ -917,6 +947,144 @@ public class PomodoroTimer {
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
             ex.printStackTrace();
         }
+    }
+    */
+    public static void setTheme(int themeChoice) {
+        currentThemeChoice = themeChoice; // Save it
+        updateBackgroundImage();
+        settingSettings();
+        settingReset();
+    }
+
+    private static void updateBackgroundImage() {
+        String imagePath = "/assets/deskkBg.jpg";
+
+        switch (currentThemeChoice) {
+            case 0:
+                imagePath = "/assets/deskkBg.jpg";
+                startButton.setForeground(Color.PINK);
+                timerButton.setForeground(Color.PINK);
+                break;
+            case 1:
+                imagePath = "/assets/japanBg.jpg";
+                startButton.setForeground(Color.WHITE);
+                timerButton.setForeground(Color.WHITE);
+                break;
+            case 2:
+                imagePath = "/assets/midori.jpg";
+                startButton.setForeground(Color.PINK);
+                timerButton.setForeground(Color.PINK);
+                break;
+            case 3:
+                imagePath = "/assets/animeGirlBg.png";
+                startButton.setForeground(Color.PINK);
+                timerButton.setForeground(Color.PINK);
+
+                break;
+            case 4:
+                imagePath = "/assets/animeBoyBg.png";
+                startButton.setForeground(Color.BLACK);
+                timerButton.setForeground(Color.BLACK);
+                break;
+        }
+
+        Image originalBackgroundImage = new ImageIcon(
+                PomodoroTimer.class.getResource(imagePath)).getImage();
+
+
+
+        // Scale based on current panel size
+        resizedBackgroundImage = originalBackgroundImage.getScaledInstance(
+                panel.getWidth(), panel.getHeight(), Image.SCALE_SMOOTH);
+
+        frame.repaint();
+    }
+
+    private static void settingSettings(){
+        String ImagePath = "assets/settings40pink2.png";
+
+        if(currentThemeChoice == 1){
+            ImagePath = "assets/settings40red2.png";
+        } else if (currentThemeChoice == 4) {
+            ImagePath = "assets/settings40brown.png";
+        } else{
+            ImagePath = "assets/settings40pink2.png";
+        }
+
+        baseSettingsImage = new ImageIcon(PomodoroTimer.class.getResource(ImagePath)).getImage();
+        settingsIcon = new ImageIcon(baseSettingsImage);
+        //settingsButton.setIcon(settingsIcon);
+
+        int settingIconSize = (int)(panel.getHeight()/13.5); //13.5 -> 14
+
+        Image settingScaledImage = baseSettingsImage.getScaledInstance(settingIconSize, settingIconSize, Image.SCALE_SMOOTH);
+        Icon settingScaledIcon = new ImageIcon(settingScaledImage);
+        settingsButton.setIcon(settingScaledIcon);
+
+        frame.repaint();
+    }
+
+    private static void settingReset(){
+        String ImagePath = "assets/reset48.png";
+
+        if(currentThemeChoice == 3){
+            ImagePath = "assets/reset48pinkk.png";
+        } else if (currentThemeChoice == 4) {
+            ImagePath = "assets/reset48black.png";
+        } else{
+            ImagePath = "assets/reset48.png";
+        }
+
+        baseResetImage = new ImageIcon(PomodoroTimer.class.getResource(ImagePath)).getImage();
+        resetIcon = new ImageIcon(baseResetImage);
+        int resetIconSize = (int)(panel.getHeight()/11.25); // Or whatever scaling logic works best
+        Image resetScaledImage = baseResetImage.getScaledInstance(resetIconSize, resetIconSize, Image.SCALE_SMOOTH);
+
+        // Wrap it into an ImageIcon (which is an Icon!)
+        Icon scaledIcon = new ImageIcon(resetScaledImage);
+
+        // Set it to your FrostedGlowButton
+        resetButton.setIcon(scaledIcon);
+        frame.repaint();
+    }
+
+/*
+
+    public static void setTheme(int themeChoice) {
+        String imagePath = "/assets/deskkBg.jpg";
+
+        switch (themeChoice) {
+            case 0:
+                imagePath = "/assets/deskkBg.jpg";
+                startButton.setForeground(Color.PINK);
+                break;
+            case 1:
+                imagePath = "/assets/japanBg.jpg";
+                startButton.setForeground(Color.WHITE);
+                timerButton.setForeground(Color.WHITE);
+                break;
+            case 2:
+                imagePath = "/assets/midori.jpg";
+                startButton.setForeground(Color.PINK);
+                timerButton.setForeground(Color.PINK);
+                break;
+            case 3:
+                imagePath = "/assets/animeGirlBg.png";
+                startButton.setForeground(Color.PINK);
+                timerButton.setForeground(Color.PINK);
+                break;
+            case 4:
+                imagePath = "/assets/animeBoyBg.png";
+                startButton.setForeground(Color.BLACK);
+                timerButton.setForeground(Color.BLACK);
+                break;
+        }
+
+        Image originalBackgroundImage = new ImageIcon(
+                PomodoroTimer.class.getResource(imagePath)).getImage();
+
+        resizedBackgroundImage = originalBackgroundImage.getScaledInstance(panel.getWidth(), panel.getHeight(), Image.SCALE_SMOOTH);
+        frame.repaint(); // Trigger repaint to reflect background change
     }
     */
 
